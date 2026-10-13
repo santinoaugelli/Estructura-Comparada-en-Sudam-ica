@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Interactivo de Informalidad Laboral: Argentina vs Brasil</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js Core -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body, h1, h2, h3, h4, h5, h6, p, span, a, button, th, td, select {
+            font-family: 'Georgia', serif !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-md py-6 px-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight"><i class="fa-solid fa-chart-line text-sky-300 mr-2"></i> Reporte Dinámico de Informalidad Laboral</h1>
+                <p class="text-slate-300 text-sm mt-1">Comparativa Argentina vs Brasil con selectores sectoriales (2023-2025)</p>
+            </div>
+            <div class="mt-4 md:mt-0">
+                <span class="px-4 py-1.5 rounded-full text-xs font-semibold bg-sky-900 text-sky-200 border border-sky-700">
+                    Fuente: Empleo Informal según Ocupación (OIT)
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-6 py-10 space-y-12">
+
+        <!-- SECCIÓN A: Evolución de la informalidad general (2023-2025) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-700 font-bold text-lg">A</div>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Evolución de la Informalidad General (2023-2025)</h2>
+                    <p class="text-sm text-slate-600">Tasa de empleo informal total en industrias generales.</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                <div class="lg:col-span-2 relative h-80 w-full">
+                    <canvas id="chartEvolucion"></canvas>
+                </div>
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
+                    <h3 class="font-bold text-slate-800 text-lg">Lectura General</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Argentina supera el 52% de informalidad general en 2025 con tendencia al alza, mientras que Brasil se mantiene estable por debajo del 37%.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN B: Sector Primario -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-lime-100 flex items-center justify-center text-lime-700 font-bold text-lg">B</div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Informalidad en el sector primario</h2>
+                        <p class="text-sm text-slate-600">Evolución temporal y variación en puntos porcentuales (p.p.) por actividad.</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 bg-slate-100 p-2 rounded-xl border border-slate-200">
+                    <label for="selectPrimario" class="text-xs font-bold text-slate-700 uppercase">Actividad Económica:</label>
+                    <select id="selectPrimario" onchange="updatePrimario()" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="agricultura">A. Agricultura, ganadería, silvicultura y pesca</option>
+                        <option value="mineria">B. Explotación de minas y canteras</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 text-center">Evolución Temporal 2023-2025 (%)</h4>
+                    <div class="relative h-72 w-full">
+                        <canvas id="chartPrimarioEvol"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 text-center">Variación (p.p. 2023-2025)</h4>
+                    <div class="relative h-72 w-full">
+                        <canvas id="chartPrimarioDiff"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN C: Sector Secundario -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-100 flex items-center justify-center text-sky-700 font-bold text-lg">C</div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Informalidad en el sector secundario</h2>
+                        <p class="text-sm text-slate-600">Evolución temporal y variación en puntos porcentuales (p.p.) por actividad.</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 bg-slate-100 p-2 rounded-xl border border-slate-200">
+                    <label for="selectSecundario" class="text-xs font-bold text-slate-700 uppercase">Actividad Económica:</label>
+                    <select id="selectSecundario" onchange="updateSecundario()" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="manufactura">C. Industrias manufactureras</option>
+                        <option value="construccion">F. Construcción</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 text-center">Evolución Temporal 2023-2025 (%)</h4>
+                    <div class="relative h-72 w-full">
+                        <canvas id="chartSecundarioEvol"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 text-center">Variación (p.p. 2023-2025)</h4>
+                    <div class="relative h-72 w-full">
+                        <canvas id="chartSecundarioDiff"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN D: Sector Terciario -->
+        <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-lime-100 flex items-center justify-center text-lime-700 font-bold text-lg">D</div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Informalidad en el sector terciario</h2>
+                        <p class="text-sm text-slate-600">Evolución temporal y variación en puntos porcentuales (p.p.) por rama de servicios.</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 bg-slate-100 p-2 rounded-xl border border-slate-200">
+                    <label for="selectTerciario" class="text-xs font-bold text-slate-700 uppercase">Actividad Económica:</label>
+                    <select id="selectTerciario" onchange="updateTerciario()" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <option value="comercio">G. Comercio al por mayor y menor</option>
+                        <option value="transporte">H. Transporte y almacenamiento</option>
+                        <option value="alojamiento">I. Alojamiento y servicio de comidas</option>
+                        <option value="inmobiliarias">L. Actividades inmobiliarias</option>
+                        <option value="ensenanza">P. Enseñanza</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 text-center">Evolución Temporal 2023-2025 (%)</h4>
+                    <div class="relative h-72 w-full">
+                        <canvas id="chartTerciarioEvol"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2 text-center">Variación (p.p. 2023-2025)</h4>
+                    <div class="relative h-72 w-full">
+                        <canvas id="chartTerciarioDiff"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 text-center text-sm border-t border-slate-800">
+        Reporte interactivo avanzado con tipografía Georgia, selectores sectoriales y etiquetas de datos optimizadas.
+    </footer>
+
+    <!-- Script de Interactividad y Gráficos -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Chart.defaults.font.family = 'Georgia';
+
+            const colorArg = '#0284c7'; // Celeste claro institucional
+            const colorBra = '#65a30d'; // Verde amarillento institucional
+            const colorArgBg = 'rgba(2, 132, 199, 0.2)';
+            const colorBraBg = 'rgba(101, 163, 13, 0.2)';
+
+            // Plugin nativo optimizado para garantizar visibilidad total de etiquetas con Georgia y negrita
+            const nativeLabelsPlugin = {
+                id: 'nativeLabels',
+                afterDatasetsDraw(chart) {
+                    const { ctx } = chart;
+                    ctx.save();
+                    ctx.font = 'bold 11px Georgia';
+                    ctx.textAlign = 'center';
+
+                    chart.data.datasets.forEach((dataset, i) => {
+                        const meta = chart.getDatasetMeta(i);
+                        if (!meta.hidden) {
+                            meta.data.forEach((element, index) => {
+                                const dataValue = dataset.data[index];
+                                if (dataValue !== null && dataValue !== undefined) {
+                                    const x = element.x;
+                                    const yPos = dataValue >= 0 ? element.y - 10 : element.y + 16;
+                                    ctx.fillStyle = (i === 0) ? '#0284c7' : '#65a30d';
+                                    const isDiffChart = chart.canvas.id.includes('Diff');
+                                    const labelText = isDiffChart ? (dataValue > 0 ? '+' + dataValue.toFixed(2) + ' p.p.' : dataValue.toFixed(2) + ' p.p.') : dataValue + '%';
+                                    ctx.fillText(labelText, x, yPos);
+                                }
+                            });
+                        }
+                    });
+                    ctx.restore();
+                }
+            };
+
+            // 1. SECCIÓN A: Evolución General
+            new Chart(document.getElementById('chartEvolucion').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['2023', '2024', '2025'],
+                    datasets: [
+                        { label: 'Argentina', data: [50.45, 51.58, 52.82], borderColor: colorArg, backgroundColor: colorArgBg, borderWidth: 3, fill: true },
+                        { label: 'Brasil', data: [37.04, 36.50, 35.62], borderColor: colorBra, backgroundColor: colorBraBg, borderWidth: 3, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true, max: 75 } }
+                },
+                plugins: [nativeLabelsPlugin]
+            });
+
+            // --- SECCIÓN B: Sector Primario ---
+            const primarioData = {
+                agricultura: {
+                    evol: { arg: [54.16, 53.31, 62.70], bra: [73.86, 73.86, 74.04] },
+                    diff: { argVal: 8.54, braVal: 0.18 }
+                },
+                mineria: {
+                    evol: { arg: [5.59, 1.70, 2.30], bra: [11.01, 11.75, 12.37] },
+                    diff: { argVal: -3.29, braVal: 1.36 }
+                }
+            };
+
+            window.chartPrimEvol = new Chart(document.getElementById('chartPrimarioEvol').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['2023', '2024', '2025'],
+                    datasets: [
+                        { label: 'Argentina', data: primarioData.agricultura.evol.arg, backgroundColor: colorArg },
+                        { label: 'Brasil', data: primarioData.agricultura.evol.bra, backgroundColor: colorBra }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true, max: 95 } }
+                },
+                plugins: [nativeLabelsPlugin]
+            });
+
+            window.chartPrimDiff = new Chart(document.getElementById('chartPrimarioDiff').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Diferencia Total (2023-2025)'],
+                    datasets: [
+                        { label: 'Argentina', data: [primarioData.agricultura.diff.argVal], backgroundColor: colorArg },
+                        { label: 'Brasil', data: [primarioData.agricultura.diff.braVal], backgroundColor: colorBra }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { min: -10, max: 15 } }
+                },
+                plugins: [nativeLabelsPlugin]
+            });
+
+            // --- SECCIÓN C: Sector Secundario ---
+            const secundarioData = {
+                manufactura: {
+                    evol: { arg: [49.49, 48.63, 49.28], bra: [24.45, 23.90, 23.37] },
+                    diff: { argVal: -0.21, braVal: -1.08 }
+                },
+                construccion: {
+                    evol: { arg: [80.55, 82.93, 83.33], bra: [63.88, 63.58, 62.48] },
+                    diff: { argVal: 2.79, braVal: -1.40 }
+                }
+            };
+
+            window.chartSecEvol = new Chart(document.getElementById('chartSecundarioEvol').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['2023', '2024', '2025'],
+                    datasets: [
+                        { label: 'Argentina', data: secundarioData.manufactura.evol.arg, backgroundColor: colorArg },
+                        { label: 'Brasil', data: secundarioData.manufactura.evol.bra, backgroundColor: colorBra }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true, max: 105 } }
+                },
+                plugins: [nativeLabelsPlugin]
+            });
+
+            window.chartSecDiff = new Chart(document.getElementById('chartSecundarioDiff').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Diferencia Total (2023-2025)'],
+                    datasets: [
+                        { label: 'Argentina', data: [secundarioData.manufactura.diff.argVal], backgroundColor: colorArg },
+                        { label: 'Brasil', data: [secundarioData.manufactura.diff.braVal], backgroundColor: colorBra }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { min: -5, max: 5 } }
+                },
+                plugins: [nativeLabelsPlugin]
+            });
+
+            // --- SECCIÓN D: Sector Terciario ---
+            const terciarioData = {
+                comercio: { evol: { arg: [67.06, 67.10, 67.67], bra: [32.56, 31.88, 30.99] }, diff: { argVal: 0.60, braVal: -1.57 } },
+                transporte: { evol: { arg: [54.61, 53.89, 56.37], bra: [45.51, 44.88, 44.56] }, diff: { argVal: 1.76, braVal: -0.95 } },
+                alojamiento: { evol: { arg: [58.62, 64.62, 67.31], bra: [49.72, 49.08, 47.94] }, diff: { argVal: 8.68, braVal: -1.78 } },
+                inmobiliarias: { evol: { arg: [56.35, 62.94, 62.53], bra: [31.43, 35.92, 32.43] }, diff: { argVal: 6.18, braVal: 0.99 } },
+                ensenanza: { evol: { arg: [5.43, 7.78, 7.38], bra: [13.20, 13.69, 13.20] }, diff: { argVal: 1.95, braVal: 0.00 } }
+            };
+
+            window.chartTercEvol = new Chart(document.getElementById('chartTerciarioEvol').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['2023', '2024', '2025'],
+                    datasets: [
+                        { label: 'Argentina', data: terciarioData.comercio.evol.arg, backgroundColor: colorArg },
+                        { label: 'Brasil', data: terciarioData.comercio.evol.bra, backgroundColor: colorBra }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { beginAtZero: true, max: 85 } }
+                },
+                plugins: [nativeLabelsPlugin]
+            });
+
+            window.chartTercDiff = new Chart(document.getElementById('chartTerciarioDiff').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Diferencia Total (2023-2025)'],
+                    datasets: [
+                        { label: 'Argentina', data: [terciarioData.comercio.diff.argVal], backgroundColor: colorArg },
+                        { label: 'Brasil', data: [terciarioData.comercio.diff.braVal], backgroundColor: colorBra }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } },
+                    scales: { y: { min: -5, max: 12 } }
+                },
+                plugins: [nativeLabelsPlugin]
+            });
+        });
+
+        function updatePrimario() {
+            const val = document.getElementById('selectPrimario').value;
+            const primarioData = {
+                agricultura: { evol: { arg: [54.16, 53.31, 62.70], bra: [73.86, 73.86, 74.04] }, diff: { argVal: 8.54, braVal: 0.18 } },
+                mineria: { evol: { arg: [5.59, 1.70, 2.30], bra: [11.01, 11.75, 12.37] }, diff: { argVal: -3.29, braVal: 1.36 } }
+            };
+            window.chartPrimEvol.data.datasets[0].data = primarioData[val].evol.arg;
+            window.chartPrimEvol.data.datasets[1].data = primarioData[val].evol.bra;
+            window.chartPrimEvol.update();
+
+            window.chartPrimDiff.data.datasets[0].data = [primarioData[val].diff.argVal];
+            window.chartPrimDiff.data.datasets[1].data = [primarioData[val].diff.braVal];
+            window.chartPrimDiff.update();
+        }
+
+        function updateSecundario() {
+            const val = document.getElementById('selectSecundario').value;
+            const secundarioData = {
+                manufactura: { evol: { arg: [49.49, 48.63, 49.28], bra: [24.45, 23.90, 23.37] }, diff: { argVal: -0.21, braVal: -1.08 } },
+                construccion: { evol: { arg: [80.55, 82.93, 83.33], bra: [63.88, 63.58, 62.48] }, diff: { argVal: 2.79, braVal: -1.40 } }
+            };
+            window.chartSecEvol.data.datasets[0].data = secundarioData[val].evol.arg;
+            window.chartSecEvol.data.datasets[1].data = secundarioData[val].evol.bra;
+            window.chartSecEvol.update();
+
+            window.chartSecDiff.data.datasets[0].data = [secundarioData[val].diff.argVal];
+            window.chartSecDiff.data.datasets[1].data = [secundarioData[val].diff.braVal];
+            window.chartSecDiff.update();
+        }
+
+        function updateTerciario() {
+            const val = document.getElementById('selectTerciario').value;
+            const terciarioData = {
+                comercio: { evol: { arg: [67.06, 67.10, 67.67], bra: [32.56, 31.88, 30.99] }, diff: { argVal: 0.60, braVal: -1.57 } },
+                transporte: { evol: { arg: [54.61, 53.89, 56.37], bra: [45.51, 44.88, 44.56] }, diff: { argVal: 1.76, braVal: -0.95 } },
+                alojamiento: { evol: { arg: [58.62, 64.62, 67.31], bra: [49.72, 49.08, 47.94] }, diff: { argVal: 8.68, braVal: -1.78 } },
+                inmobiliarias: { evol: { arg: [56.35, 62.94, 62.53], bra: [31.43, 35.92, 32.43] }, diff: { argVal: 6.18, braVal: 0.99 } },
+                ensenanza: { evol: { arg: [5.43, 7.78, 7.38], bra: [13.20, 13.69, 13.20] }, diff: { argVal: 1.95, braVal: 0.00 } }
+            };
+            window.chartTercEvol.data.datasets[0].data = terciarioData[val].evol.arg;
+            window.chartTercEvol.data.datasets[1].data = terciarioData[val].evol.bra;
+            window.chartTercEvol.update();
+
+            window.chartTercDiff.data.datasets[0].data = [terciarioData[val].diff.argVal];
+            window.chartTercDiff.data.datasets[1].data = [terciarioData[val].diff.braVal];
+            window.chartTercDiff.update();
+        }
+    </script>
+</body>
+</html>
